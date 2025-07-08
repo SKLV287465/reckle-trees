@@ -22,7 +22,7 @@ ark-std = "0.4.0"
 num = { version = "0.4.0", default-features = false }
 
 plonky2 = "0.1.4"
-plonky2_crypto = { git = "https://github.com/Lagrange-Labs/plonky2-crypto", branch = "feat/serialization" }
+plonky2_crypto = { git = "https://github.com/SKLV287465/plonky2-crypto.git", branch = "feat/serialization" }
 plonky2-bn254 = { git = "https://github.com/SKLV287465/plonky2-bn254.git" }
 
 [patch.crates-io]

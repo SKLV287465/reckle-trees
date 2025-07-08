@@ -27,6 +27,7 @@ plonky2-bn254 = { git = "https://github.com/SKLV287465/plonky2-bn254.git" }
 
 [patch.crates-io]
 plonky2 = { git = "https://github.com/SKLV287465/plonky2.git" }
+plonky2_field = { git = "https://github.com/SKLV287465/plonky2.git", package = "plonky2_field" }
 
 [dev-dependencies]
 rand = { version = "0.8.5", default-features = false, features = [

@@ -26,7 +26,7 @@ plonky2_crypto = { git = "https://github.com/Lagrange-Labs/plonky2-crypto", bran
 plonky2-bn254 = { git = "https://github.com/sshravan/plonky2-bn254" }
 
 [patch.crates-io]
-plonky2 = { git = "https://github.com/Lagrange-Labs/plonky2" }
+plonky2 = { git = "https://github.com/SKLV287465/plonky2.git" }
 
 [dev-dependencies]
 rand = { version = "0.8.5", default-features = false, features = [

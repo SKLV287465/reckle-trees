@@ -4,9 +4,12 @@ use std::collections::HashSet;
 use plonky2::hash::hash_types::RichField;
 use plonky2::plonk::config::GenericHashOut;
 use plonky2::plonk::config::Hasher;
+use serde::Deserialize;
+use serde::Serialize;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct CanonicalTree<F: RichField, H: Hasher<F>> {
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CanonicalTree<F: RichField, H: Hasher<F>> 
+{
     pub log_max_capacity: u8, // Indexed from 0
     pub digests: HashMap<(u8, u32), H::Hash>,
 }

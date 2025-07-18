@@ -1,4 +1,5 @@
 use log::info;
+use serde::{Deserialize, Serialize};
 
 use std::collections::{HashMap, HashSet};
 use std::time::Instant;
@@ -13,10 +14,12 @@ use crate::reckle_std::provers::{CompactProver, InternalProver, LeafProver};
 use crate::utils::canonical::CanonicalTree;
 use crate::utils::mt_binary::{MerkleProof, PartialMT};
 
+#[derive(Serialize, Deserialize)]
+#[serde(bound(deserialize = "Vec<F>: Deserialize<'de>"))]
 pub struct RecDS<F, C, const D: usize>
 where
     C: GenericConfig<D, F = F> + 'static,
-    F: RichField + Extendable<D>,
+    F: RichField + Extendable<D> + Serialize,
     C::Hasher: AlgebraicHasher<F>,
 {
     pub leaves: HashMap<u32, Vec<F>>,

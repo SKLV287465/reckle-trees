@@ -1,13 +1,19 @@
 use itertools::Itertools;
 use num_traits::ToPrimitive;
+use serde::Deserialize;
+use serde::Serialize;
 use std::collections::{HashMap, HashSet};
 
 use plonky2::hash::hash_types::RichField;
 use plonky2::plonk::config::GenericHashOut;
 use plonky2::plonk::config::Hasher;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct MerkleProof<F: RichField, H: Hasher<F>> {
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(bound(deserialize = "H::Hash: Deserialize<'de>"))]
+pub struct MerkleProof<F: RichField, H: Hasher<F>> 
+where
+    H::Hash: Serialize,
+{
     /// The Merkle digest of each sibling subtree, staying from the bottom most layer.
     pub siblings: Vec<H::Hash>,
 }
@@ -44,8 +50,12 @@ impl<F: RichField, H: Hasher<F>> MerkleBucketProof<F, H> {
 }
 
 /// Note: Saves H(data). Assumes that the caller knows `data`.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PartialMT<F: RichField, H: Hasher<F>> {
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(bound(deserialize = "H::Hash: Deserialize<'de>"))]
+pub struct PartialMT<F: RichField, H: Hasher<F>> 
+where 
+    H::Hash: Serialize,
+{
     pub log_max_capacity: u8, // Indexed from 0
     pub digests: HashMap<(u8, u32), H::Hash>,
 }

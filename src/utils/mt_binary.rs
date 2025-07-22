@@ -159,7 +159,10 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
                 result
             }
         }
-        assert!(current_digest == merkle_root, "Invalid Merkle proof.");
+        // assert!(current_digest == merkle_root, "Invalid Merkle proof.");
+        if (current_digest != merkle_root) {
+            return false;
+        }
         true
     }
 

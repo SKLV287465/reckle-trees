@@ -9,12 +9,15 @@ use plonky2::plonk::proof::ProofWithPublicInputs;
 
 use plonky2::hash::hash_types::HashOut;
 use plonky2::plonk::config::AlgebraicHasher;
+use serde::{Serialize, Deserialize};
 
 use crate::reckle_bucket::binary_pp::SNARK_PP;
 use crate::reckle_bucket::provers::{CompactProver, InternalProver, LeafProver};
 use crate::utils::canonical::CanonicalTree;
 use crate::utils::mt_binary::PartialMT;
 
+#[derive(Serialize, Deserialize)]
+#[serde(bound(deserialize = "Vec<F>: Deserialize<'de>"))]
 pub struct BucketDS<const Q: usize, F, C, const D: usize>
 where
     C: GenericConfig<D, F = F> + 'static,

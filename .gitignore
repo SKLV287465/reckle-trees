@@ -2,3 +2,4 @@
 /Cargo.lock
 .history
 .DS_Store
+replace_bt.sh

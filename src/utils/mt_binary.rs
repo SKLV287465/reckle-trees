@@ -233,6 +233,40 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
         }
     }
 
+    pub fn update_tree_mul(&mut self, updates: BTreeMap<u32, Vec<F>>) {
+        let mut btreeset1 = BTreeSet::new();
+        let mut btreeset2 = BTreeSet::new();
+
+        let mut leaf_indices = &mut btreeset1;
+        let mut other = &mut btreeset2;
+
+        for (k, v) in updates {
+            self.digests.insert((0, k), H::hash_or_noop(&v));
+            leaf_indices.insert(k);
+        }
+
+        for i in 1..self.log_max_capacity + 1 as u8 {
+            for leaf_index in &*leaf_indices {
+                other.insert(leaf_index >> 1);
+            }
+            leaf_indices.clear();
+
+            (leaf_indices, other) = (other, leaf_indices);
+
+            for leaf_index in &*leaf_indices {
+                let key1: (u8, u32) = (i - 1, 2 * (leaf_index));
+                let key2: (u8, u32) = (i - 1, 2 * (leaf_index) + 1);
+                let key = (i, *leaf_index);
+
+                let left = self.digests.entry(key1).or_insert(Self::default()).clone();
+                let right = self.digests.entry(key2).or_insert(Self::default()).clone();
+
+                let parent = H::two_to_one(left, right);
+                self.digests.insert(key, parent);
+            }
+        }
+    }
+
     pub fn new_bucket(
         log_bucket_size: usize,
         log_max_capacity: u8,

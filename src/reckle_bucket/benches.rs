@@ -7,7 +7,7 @@ use rand::rngs::StdRng;
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::time::Instant;
 
@@ -52,7 +52,7 @@ where
                 (0..tree_size).choose_multiple(&mut r, (1 << log_subset_size) as usize),
             );
 
-            let leaves: HashMap<u32, Vec<F>> =
+            let leaves: BTreeMap<u32, Vec<F>> =
                 generate_recproofs_leaves(4, &mut r, &subset_indices);
             let leaves_copy = leaves.clone();
 

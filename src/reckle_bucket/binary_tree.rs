@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::time::Instant;
 
 use log::info;
@@ -24,13 +24,13 @@ where
     F: RichField + Extendable<D>,
     C::Hasher: AlgebraicHasher<F, Hash = HashOut<F>>,
 {
-    pub leaves: HashMap<u32, Vec<F>>,
+    pub leaves: BTreeMap<u32, Vec<F>>,
 
     pub mt: PartialMT<F, C::Hasher>,     // Merkle tree
     pub ct: CanonicalTree<F, C::Hasher>, // Canonical digest tree
-    pub proofs: HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>>, // Recursive proof tree
+    pub proofs: BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>>, // Recursive proof tree
 
-    pub proofs_compact: HashMap<u8, ProofWithPublicInputs<F, C, D>>,
+    pub proofs_compact: BTreeMap<u8, ProofWithPublicInputs<F, C, D>>,
 }
 
 impl<const Q: usize, F, C, const D: usize> BucketDS<Q, F, C, D>
@@ -40,7 +40,7 @@ where
     C::Hasher: AlgebraicHasher<F, Hash = HashOut<F>>,
     [(); 1 << Q]:,
 {
-    pub fn new(log_tree_size: u8, pp: &SNARK_PP<Q, F, C, D>, leaves: HashMap<u32, Vec<F>>) -> Self {
+    pub fn new(log_tree_size: u8, pp: &SNARK_PP<Q, F, C, D>, leaves: BTreeMap<u32, Vec<F>>) -> Self {
         let mt: PartialMT<F, C::Hasher> = PartialMT::new_bucket(Q, log_tree_size, &leaves);
         let ct: CanonicalTree<F, C::Hasher> = CanonicalTree::new(mt.log_max_capacity, &leaves);
 
@@ -56,12 +56,12 @@ where
     #[allow(non_snake_case)]
     pub fn build_SNARK_tree(
         pp: &SNARK_PP<Q, F, C, D>,
-        leaves: &HashMap<u32, Vec<F>>,
+        leaves: &BTreeMap<u32, Vec<F>>,
         mt: &PartialMT<F, C::Hasher>,
         ct: &CanonicalTree<F, C::Hasher>,
     ) -> (
-        HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
-        HashMap<u8, ProofWithPublicInputs<F, C, D>>,
+        BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
+        BTreeMap<u8, ProofWithPublicInputs<F, C, D>>,
     ) {
         let mut indices: HashSet<u32> = HashSet::new();
         for index in leaves.keys() {
@@ -69,8 +69,8 @@ where
         }
 
         let mut proof: ProofWithPublicInputs<F, C, D>;
-        let mut proofs: HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>> = HashMap::new();
-        let mut proofs_compact: HashMap<u8, ProofWithPublicInputs<F, C, D>> = HashMap::new();
+        let mut proofs: BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>> = BTreeMap::new();
+        let mut proofs_compact: BTreeMap<u8, ProofWithPublicInputs<F, C, D>> = BTreeMap::new();
 
         let mut leaf_prover = LeafProver::new(&pp, mt, ct);
         for i in &indices {

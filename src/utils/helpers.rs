@@ -25,7 +25,7 @@ use plonky2_crypto::{
 use rand::rngs::StdRng;
 use rand::Rng;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashSet},
     marker::PhantomData,
 };
 
@@ -35,12 +35,12 @@ pub fn generate_recproofs_leaves<F>(
     leaf_size_including_index: usize,
     r: &mut StdRng,
     subset_indices: &HashSet<u32>,
-) -> HashMap<u32, Vec<F>>
+) -> BTreeMap<u32, Vec<F>>
 where
     F: Field,
 {
     assert!(leaf_size_including_index > 1);
-    let leaves: HashMap<u32, Vec<F>> = subset_indices
+    let leaves: BTreeMap<u32, Vec<F>> = subset_indices
         .clone()
         .into_iter()
         .sorted()
@@ -51,7 +51,7 @@ where
             let value = [[F::from_canonical_u64(i as u64)].to_vec(), data].concat();
             (i as u32, value)
         })
-        .collect::<HashMap<_, _>>();
+        .collect::<BTreeMap<_, _>>();
     leaves
 }
 
@@ -366,11 +366,11 @@ pub fn g1_affine_to_u32(data: G1Affine) -> Vec<u32> {
 
     [x_u32, y_u32].concat()
 }
-pub fn generate_bls_pks<F>(r: &mut StdRng, subset_indices: &HashSet<u32>) -> HashMap<u32, Vec<F>>
+pub fn generate_bls_pks<F>(r: &mut StdRng, subset_indices: &HashSet<u32>) -> BTreeMap<u32, Vec<F>>
 where
     F: Field,
 {
-    let leaves: HashMap<u32, Vec<F>> = subset_indices
+    let leaves: BTreeMap<u32, Vec<F>> = subset_indices
         .clone()
         .into_iter()
         .sorted()
@@ -378,7 +378,7 @@ where
             let value = generate_bls_pk::<F>(r);
             (i as u32, value)
         })
-        .collect::<HashMap<_, _>>();
+        .collect::<BTreeMap<_, _>>();
     leaves
 }
 

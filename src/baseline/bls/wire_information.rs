@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use plonky2::{
     field::extension::Extendable,
@@ -36,7 +36,7 @@ impl<const D: usize> WireInformation<D> {
     pub fn compute_pw<F, H>(
         &self,
         digest_target: HashOut<F>,
-        merkle_proofs: &HashMap<u32, (Vec<F>, MerkleProof<F, H>)>,
+        merkle_proofs: &BTreeMap<u32, (Vec<F>, MerkleProof<F, H>)>,
     ) -> PartialWitness<F>
     where
         F: RichField + Extendable<D>,

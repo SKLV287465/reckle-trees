@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use itertools::Itertools;
 
@@ -19,7 +19,7 @@ where
     C::Hasher: AlgebraicHasher<F, Hash = HashOut<F>>,
     [(); 1 << Q]:,
 {
-    pub leaves: HashMap<u32, Vec<F>>,
+    pub leaves: BTreeMap<u32, Vec<F>>,
     pub mt: PartialMT<F, C::Hasher>,
     pub pp: SNARK_PP<Q, F, C, D>,
 }
@@ -31,7 +31,7 @@ where
     C::Hasher: AlgebraicHasher<F>,
     [(); 1 << Q]:,
 {
-    leaves: &'a HashMap<u32, Vec<F>>,
+    leaves: &'a BTreeMap<u32, Vec<F>>,
     mt: &'a PartialMT<F, C::Hasher>,
     pp: &'a SNARK_PP<Q, F, C, D>,
 }
@@ -44,7 +44,7 @@ where
     [(); 1 << Q]:,
 {
     pub fn new(
-        leaves: &'a HashMap<u32, Vec<F>>,
+        leaves: &'a BTreeMap<u32, Vec<F>>,
         pp: &'a SNARK_PP<Q, F, C, D>,
         mt: &'a PartialMT<F, C::Hasher>,
     ) -> LeafProver<'a, Q, F, C, D> {

@@ -6,7 +6,7 @@ use rand::rngs::StdRng;
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::time::Instant;
 
 use crate::bls::binary_pp::SNARK_PP;
@@ -49,7 +49,7 @@ where
                 (0..tree_size).choose_multiple(&mut r, (1 << log_subset_size) as usize),
             );
 
-            let leaves: HashMap<u32, Vec<F>> = generate_bls_pks::<F>(&mut r, &subset_indices);
+            let leaves: BTreeMap<u32, Vec<F>> = generate_bls_pks::<F>(&mut r, &subset_indices);
             let leaves_copy = leaves.clone();
 
             let mut bls_ds: BlsDS<Q, F, C, D>;

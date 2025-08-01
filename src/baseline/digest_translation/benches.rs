@@ -7,7 +7,7 @@ use plonky2::plonk::config::GenericConfig;
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::time::Instant;
 
@@ -33,7 +33,7 @@ where
         let subset_indices: HashSet<u32> = HashSet::from_iter(0..tree_size);
 
         let mut r: StdRng = StdRng::seed_from_u64(223);
-        let leaves: HashMap<u32, Vec<F>> = generate_recproofs_leaves(4, &mut r, &subset_indices);
+        let leaves: BTreeMap<u32, Vec<F>> = generate_recproofs_leaves(4, &mut r, &subset_indices);
         let leaves_monolith = leaves
             .into_iter()
             .sorted_by_key(|x| x.0)

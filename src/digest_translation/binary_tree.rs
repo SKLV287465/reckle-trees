@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::time::Instant;
 
 use log::info;
@@ -20,14 +20,14 @@ where
     KH: Hasher<F>,
     PH: AlgebraicHasher<F>,
 {
-    pub leaves: HashMap<u32, Vec<F>>,
+    pub leaves: BTreeMap<u32, Vec<F>>,
 
     pub mt_kh: PartialMT<F, KH>,
     pub mt_ph: PartialMT<F, PH>,
 
-    pub proofs: HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
+    pub proofs: BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
 
-    pub proofs_compact: HashMap<u8, ProofWithPublicInputs<F, C, D>>,
+    pub proofs_compact: BTreeMap<u8, ProofWithPublicInputs<F, C, D>>,
 }
 
 impl<F, C, KH, PH, const D: usize> DigestTranslationDS<F, C, KH, PH, D>
@@ -38,7 +38,7 @@ where
     KH: Hasher<F>,
     PH: AlgebraicHasher<F>,
 {
-    pub fn new(pp: &SNARK_PP<F, C, D>, leaves: HashMap<u32, Vec<F>>) -> Self {
+    pub fn new(pp: &SNARK_PP<F, C, D>, leaves: BTreeMap<u32, Vec<F>>) -> Self {
         let tree_size = (1 << pp.log_max_capacity) as usize;
         assert!(tree_size == leaves.len());
 
@@ -62,12 +62,12 @@ where
         mt_kh: &PartialMT<F, KH>,
         mt_ph: &PartialMT<F, PH>,
     ) -> (
-        HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
-        HashMap<u8, ProofWithPublicInputs<F, C, D>>,
+        BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
+        BTreeMap<u8, ProofWithPublicInputs<F, C, D>>,
     ) {
         let mut proof: ProofWithPublicInputs<F, C, D>;
-        let mut proofs: HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>> = HashMap::new();
-        let mut proofs_compact: HashMap<u8, ProofWithPublicInputs<F, C, D>> = HashMap::new();
+        let mut proofs: BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>> = BTreeMap::new();
+        let mut proofs_compact: BTreeMap<u8, ProofWithPublicInputs<F, C, D>> = BTreeMap::new();
 
         let mut current_level_size = (1 << (pp.log_max_capacity - 1)) as u32;
 

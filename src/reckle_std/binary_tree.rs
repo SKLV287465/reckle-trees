@@ -1,7 +1,7 @@
 use log::info;
 use serde::{Deserialize, Serialize};
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::time::Instant;
 
 use plonky2::field::extension::Extendable;
@@ -22,13 +22,13 @@ where
     F: RichField + Extendable<D> + Serialize,
     C::Hasher: AlgebraicHasher<F>,
 {
-    pub leaves: HashMap<u32, Vec<F>>,
+    pub leaves: BTreeMap<u32, Vec<F>>,
 
     pub mt: PartialMT<F, C::Hasher>,     // Merkle tree
     pub ct: CanonicalTree<F, C::Hasher>, // Canonical digest tree
-    pub proofs: HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>>, // Recursive proof tree
+    pub proofs: BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>>, // Recursive proof tree
 
-    pub proofs_compact: HashMap<u8, ProofWithPublicInputs<F, C, D>>,
+    pub proofs_compact: BTreeMap<u8, ProofWithPublicInputs<F, C, D>>,
 }
 
 impl<F, C, const D: usize> RecDS<F, C, D>
@@ -40,7 +40,7 @@ where
     // Synonymous with aggregation
     pub fn new(
         pp: &SNARK_PP<F, C, D>,
-        merkle_proofs: HashMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)>,
+        merkle_proofs: BTreeMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)>,
     ) -> Self
     where
         C::Hasher: AlgebraicHasher<F>,
@@ -62,9 +62,9 @@ where
     }
 
     pub fn get_leaves_map(
-        merkle_proofs: &HashMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)>,
-    ) -> HashMap<u32, Vec<F>> {
-        let mut leaves: HashMap<u32, Vec<F>> = HashMap::new();
+        merkle_proofs: &BTreeMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)>,
+    ) -> BTreeMap<u32, Vec<F>> {
+        let mut leaves: BTreeMap<u32, Vec<F>> = BTreeMap::new();
         for (k, v) in merkle_proofs {
             let index = k.clone();
             let leaf_data = v.0.clone();
@@ -76,12 +76,12 @@ where
     #[allow(non_snake_case)]
     pub fn build_SNARK_tree(
         pp: &SNARK_PP<F, C, D>,
-        leaves: &HashMap<u32, Vec<F>>,
+        leaves: &BTreeMap<u32, Vec<F>>,
         mt: &PartialMT<F, C::Hasher>,
         ct: &CanonicalTree<F, C::Hasher>,
     ) -> (
-        HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
-        HashMap<u8, ProofWithPublicInputs<F, C, D>>,
+        BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>>,
+        BTreeMap<u8, ProofWithPublicInputs<F, C, D>>,
     )
     where
         C::Hasher: AlgebraicHasher<F>,
@@ -92,8 +92,8 @@ where
         }
 
         let mut proof: ProofWithPublicInputs<F, C, D>;
-        let mut proofs: HashMap<(u8, u32), ProofWithPublicInputs<F, C, D>> = HashMap::new();
-        let mut proofs_compact: HashMap<u8, ProofWithPublicInputs<F, C, D>> = HashMap::new();
+        let mut proofs: BTreeMap<(u8, u32), ProofWithPublicInputs<F, C, D>> = BTreeMap::new();
+        let mut proofs_compact: BTreeMap<u8, ProofWithPublicInputs<F, C, D>> = BTreeMap::new();
 
         let mut leaf_prover = LeafProver::new(&pp, mt, ct);
         for i in &indices {
@@ -322,7 +322,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use std::collections::HashSet;
     use std::time::Instant;
 
@@ -363,11 +363,11 @@ mod tests {
 
         println!("=== Sorted indices: {:?}", subset_indices_vec);
 
-        let leaves: HashMap<u32, Vec<F>> = subset_indices
+        let leaves: BTreeMap<u32, Vec<F>> = subset_indices
             .clone()
             .into_iter()
             .map(|i| (i as u32, F::rand_vec(5)))
-            .collect::<HashMap<_, _>>();
+            .collect::<BTreeMap<_, _>>();
 
         let now = Instant::now();
         let pp = SNARK_PP::<F, C, D>::setup(log_tree_size);
@@ -375,7 +375,7 @@ mod tests {
         println!("=== Setup done in {:?}", elapsed);
 
         let mt = PartialMT::<F, C::Hasher>::new(log_tree_size, &leaves);
-        let mut merkle_proofs: HashMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)> = HashMap::new();
+        let mut merkle_proofs: BTreeMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)> = BTreeMap::new();
         for (k, v) in &leaves {
             let mt_proof = mt.prove(*k);
             merkle_proofs.insert(*k, (v.clone(), mt_proof));

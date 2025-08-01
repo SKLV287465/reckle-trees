@@ -6,7 +6,7 @@ use rand::rngs::StdRng;
 use rand::Rng;
 use rand::SeedableRng;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::time::Instant;
 
 use crate::digest_translation::binary_pp::SNARK_PP;
@@ -31,7 +31,7 @@ where
         let subset_indices: HashSet<u32> = HashSet::from_iter(0..tree_size);
 
         let mut r: StdRng = StdRng::seed_from_u64(223);
-        let leaves: HashMap<u32, Vec<F>> = generate_recproofs_leaves(4, &mut r, &subset_indices);
+        let leaves: BTreeMap<u32, Vec<F>> = generate_recproofs_leaves(4, &mut r, &subset_indices);
 
         let now = Instant::now();
         let pp = SNARK_PP::<F, C, D>::setup::<KH, PH>(log_tree_size);

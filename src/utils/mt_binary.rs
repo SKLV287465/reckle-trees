@@ -2,7 +2,7 @@ use itertools::Itertools;
 use num_traits::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 use plonky2::hash::hash_types::RichField;
 use plonky2::plonk::config::GenericHashOut;
@@ -57,7 +57,7 @@ where
     H::Hash: Serialize,
 {
     pub log_max_capacity: u8, // Indexed from 0
-    pub digests: HashMap<(u8, u32), H::Hash>,
+    pub digests: BTreeMap<(u8, u32), H::Hash>,
 }
 
 impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
@@ -66,9 +66,9 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
     }
 
     // Assumes unknown sibling to be H(0)
-    pub fn new(log_max_capacity: u8, leaves: &HashMap<u32, Vec<F>>) -> Self {
+    pub fn new(log_max_capacity: u8, leaves: &BTreeMap<u32, Vec<F>>) -> Self {
         let mut indices: HashSet<u32> = HashSet::new();
-        let mut digests: HashMap<(u8, u32), H::Hash> = HashMap::new();
+        let mut digests: BTreeMap<(u8, u32), H::Hash> = BTreeMap::new();
 
         for (index, value) in leaves {
             indices.insert(index.clone() >> 1);
@@ -179,9 +179,9 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
         digest_bytes
     }
 
-    pub fn from_proofs(proofs: &HashMap<u32, (Vec<F>, MerkleProof<F, H>)>) -> Self {
+    pub fn from_proofs(proofs: &BTreeMap<u32, (Vec<F>, MerkleProof<F, H>)>) -> Self {
         let mut level = 0 as u8;
-        let mut digests: HashMap<(u8, u32), H::Hash> = HashMap::new();
+        let mut digests: BTreeMap<(u8, u32), H::Hash> = BTreeMap::new();
 
         for (k, v) in proofs {
             let mut index = k.clone();
@@ -236,13 +236,13 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
     pub fn new_bucket(
         log_bucket_size: usize,
         log_max_capacity: u8,
-        leaves: &HashMap<u32, Vec<F>>,
+        leaves: &BTreeMap<u32, Vec<F>>,
     ) -> Self {
         assert!(log_bucket_size <= log_max_capacity as usize);
 
         let bucket_size = (1 << log_bucket_size) as u32;
         let mut indices: HashSet<u32> = HashSet::new();
-        let mut digests: HashMap<(u8, u32), H::Hash> = HashMap::new();
+        let mut digests: BTreeMap<(u8, u32), H::Hash> = BTreeMap::new();
 
         let buckets = leaves
             .iter()
@@ -284,9 +284,9 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
         }
     }
 
-    pub fn from_bucket_proofs(proofs: &HashMap<u32, (Vec<F>, MerkleBucketProof<F, H>)>) -> Self {
+    pub fn from_bucket_proofs(proofs: &BTreeMap<u32, (Vec<F>, MerkleBucketProof<F, H>)>) -> Self {
         let mut level = 0 as u8;
-        let mut digests: HashMap<(u8, u32), H::Hash> = HashMap::new();
+        let mut digests: BTreeMap<(u8, u32), H::Hash> = BTreeMap::new();
         let mut visited_bucket = HashSet::<usize>::new();
         for (k, v) in proofs {
             let mut leaf_index = k.clone();
@@ -380,7 +380,7 @@ mod tests {
         let subset_indices: HashSet<u32> =
             HashSet::from_iter((0..size).choose_multiple(&mut r, subset_size as usize));
 
-        let leaves: HashMap<u32, Vec<F>> = generate_recproofs_leaves(4, &mut r, &subset_indices);
+        let leaves: BTreeMap<u32, Vec<F>> = generate_recproofs_leaves(4, &mut r, &subset_indices);
 
         let mut leaves_backup = leaves.clone();
 
@@ -408,7 +408,7 @@ mod tests {
         let mt = PartialMT::<F, H>::new(ell, &leaves_backup);
         assert!(baseline == mt.get_digest(), "Update failed.");
 
-        let mut proofs: HashMap<u32, (Vec<F>, MerkleProof<F, H>)> = HashMap::new();
+        let mut proofs: BTreeMap<u32, (Vec<F>, MerkleProof<F, H>)> = BTreeMap::new();
         for index in subset_indices {
             proofs.insert(
                 index,

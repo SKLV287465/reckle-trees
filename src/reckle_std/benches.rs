@@ -7,7 +7,7 @@ use rand::rngs::StdRng;
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::time::Instant;
 
@@ -49,17 +49,17 @@ where
                 (0..tree_size).choose_multiple(&mut r, (1 << log_subset_size) as usize),
             );
 
-            let leaves: HashMap<u32, Vec<F>> = subset_indices
+            let leaves: BTreeMap<u32, Vec<F>> = subset_indices
                 .clone()
                 .into_iter()
                 .map(|i| (i as u32, F::rand_vec(5)))
-                .collect::<HashMap<_, _>>();
+                .collect::<BTreeMap<_, _>>();
 
             let mt = PartialMT::<F, C::Hasher>::new(log_tree_size, &leaves);
             println!("=== Partial Merkle tree done");
 
-            let mut merkle_proofs: HashMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)> =
-                HashMap::new();
+            let mut merkle_proofs: BTreeMap<u32, (Vec<F>, MerkleProof<F, C::Hasher>)> =
+                BTreeMap::new();
             for (k, v) in &leaves {
                 let mt_proof = mt.prove(*k);
                 merkle_proofs.insert(*k, (v.clone(), mt_proof));

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 
 use plonky2::hash::hash_types::RichField;
@@ -11,7 +11,7 @@ use serde::Serialize;
 pub struct CanonicalTree<F: RichField, H: Hasher<F>> 
 {
     pub log_max_capacity: u8, // Indexed from 0
-    pub digests: HashMap<(u8, u32), H::Hash>,
+    pub digests: BTreeMap<(u8, u32), H::Hash>,
 }
 
 impl<F: RichField, H: Hasher<F>> CanonicalTree<F, H> {
@@ -19,9 +19,9 @@ impl<F: RichField, H: Hasher<F>> CanonicalTree<F, H> {
         H::Hash::from_bytes(&vec![0; H::HASH_SIZE])
     }
 
-    pub fn new(log_max_capacity: u8, subset_leaves: &HashMap<u32, Vec<F>>) -> Self {
+    pub fn new(log_max_capacity: u8, subset_leaves: &BTreeMap<u32, Vec<F>>) -> Self {
         let mut indices: HashSet<u32> = HashSet::new();
-        let mut digests: HashMap<(u8, u32), H::Hash> = HashMap::new();
+        let mut digests: BTreeMap<(u8, u32), H::Hash> = BTreeMap::new();
 
         for (index, value) in subset_leaves {
             indices.insert(index.clone() >> 1);
@@ -120,11 +120,11 @@ mod tests {
             (0..size).choose_multiple(&mut rand::thread_rng(), subset_size as usize),
         );
 
-        let leaves: HashMap<u32, Vec<F>> = subset_indices
+        let leaves: BTreeMap<u32, Vec<F>> = subset_indices
             .clone()
             .into_iter()
             .map(|i| (i as u32, F::rand_vec(5)))
-            .collect::<HashMap<_, _>>();
+            .collect::<BTreeMap<_, _>>();
 
         let mt = PartialMT::<F, H>::new(ell, &leaves);
         let ct = CanonicalTree::<F, H>::new(ell, &leaves);

@@ -81,7 +81,7 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
         )[level as usize])
     }
 
-    // Assumes unknown sibling to be H(0)
+    // Assumes all leaf nodes are H(0)
     pub fn new(log_max_capacity: u8, leaves: &BTreeMap<u32, Vec<F>>) -> Self {
         let mut indices: BTreeSet<u32> = BTreeSet::new();
         let mut digests: BTreeMap<(u8, u32), H::Hash> = BTreeMap::new();

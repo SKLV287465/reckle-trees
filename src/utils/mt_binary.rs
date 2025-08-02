@@ -3,6 +3,8 @@ use num_traits::ToPrimitive;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
+// use std::sync::LazyLock;
+use std::sync::OnceLock;
 
 use plonky2::hash::hash_types::RichField;
 use plonky2::plonk::config::GenericHashOut;
@@ -61,8 +63,22 @@ where
 }
 
 impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
-    pub fn default() -> H::Hash {
-        H::Hash::from_bytes(&vec![0; H::HASH_SIZE])
+    pub fn default(level: u8) -> H::Hash {
+        static EMPTY_HASHES: OnceLock<[Vec<u8>; 32]> = OnceLock::new();
+
+        H::Hash::from_bytes(&EMPTY_HASHES.get_or_init(||
+            {
+                let mut empty_hashes: Vec<Vec<u8>> = Vec::with_capacity(128);
+                let mut zero_hash = H::Hash::from_bytes(&vec![0; H::HASH_SIZE]);
+
+                for i in 0..32 {
+                    empty_hashes.push(H::Hash::to_bytes(&zero_hash));
+                    zero_hash = H::two_to_one(zero_hash,zero_hash);
+                }
+
+                empty_hashes.try_into().unwrap()
+            }
+        )[level as usize])
     }
 
     // Assumes unknown sibling to be H(0)
@@ -81,8 +97,8 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
                 let key2: (u8, u32) = (i - 1, 2 * (*j) + 1);
                 let key = (i, *j);
 
-                let left = digests.entry(key1).or_insert(Self::default()).clone();
-                let right = digests.entry(key2).or_insert(Self::default()).clone();
+                let left = digests.entry(key1).or_insert(Self::default(i-1)).clone();
+                let right = digests.entry(key2).or_insert(Self::default(i-1)).clone();
 
                 let parent = H::two_to_one(left, right);
                 digests.insert(key, parent);
@@ -105,7 +121,13 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
             } else {
                 (i, leaf_index - 1)
             };
-            siblings.push(self.digests.get(&key).unwrap().clone());
+            siblings.push(if let Some(val) = self.digests.get(&key) {
+                val.clone()
+            }
+            else {
+                Self::default(i)
+            }
+            );
             leaf_index = leaf_index >> 1;
         }
         MerkleProof { siblings }
@@ -225,8 +247,8 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
             let key2: (u8, u32) = (i - 1, 2 * (leaf_index) + 1);
             let key = (i, leaf_index);
 
-            let left = self.digests.entry(key1).or_insert(Self::default()).clone();
-            let right = self.digests.entry(key2).or_insert(Self::default()).clone();
+            let left = self.digests.entry(key1).or_insert(Self::default(i-1)).clone();
+            let right = self.digests.entry(key2).or_insert(Self::default(i-1)).clone();
 
             let parent = H::two_to_one(left, right);
             self.digests.insert(key, parent);
@@ -249,8 +271,8 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
                 let key2: (u8, u32) = (i - 1, 2 * (leaf_index) + 1);
                 let key = (i, *leaf_index);
 
-                let left = self.digests.entry(key1).or_insert(Self::default()).clone();
-                let right = self.digests.entry(key2).or_insert(Self::default()).clone();
+                let left = self.digests.entry(key1).or_insert(Self::default(i-1)).clone();
+                let right = self.digests.entry(key2).or_insert(Self::default(i-1)).clone();
 
                 let parent = H::two_to_one(left, right);
                 self.digests.insert(key, parent);
@@ -279,7 +301,7 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
             let end_index = bucket_size * (index_bucket + 1);
             for index in start_index..end_index {
                 indices.insert(index.clone() >> 1);
-                digests.insert((0, index.clone()), Self::default());
+                digests.insert((0, index.clone()), Self::default(0));
             }
         }
 
@@ -294,8 +316,8 @@ impl<F: RichField, H: Hasher<F>> PartialMT<F, H> {
                 let key2: (u8, u32) = (i - 1, 2 * (*j) + 1);
                 let key = (i, *j);
 
-                let left = digests.entry(key1).or_insert(Self::default()).clone();
-                let right = digests.entry(key2).or_insert(Self::default()).clone();
+                let left = digests.entry(key1).or_insert(Self::default(i-1)).clone();
+                let right = digests.entry(key2).or_insert(Self::default(i-1)).clone();
 
                 let parent = H::two_to_one(left, right);
                 digests.insert(key, parent);
